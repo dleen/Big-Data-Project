@@ -1,0 +1,48 @@
+\documentclass{article}
+\title{CSE599 Project Proposal}
+\author{David Leen, Brian Walker}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{hyperref}
+\begin{document}
+\maketitle
+
+\textbf{Project Title:}  Strategies for Parallelizing Sequential Algorithms
+
+\textbf{Data set:} Potential data sets include: 
+	\begin{itemize}
+		\item Click Through Rate dataset from HW1
+		\item KDD cup datasets
+		\item Twitter Graph Dataset
+	\end{itemize}
+	
+\textbf{Project Idea:}
+
+	We will be comparing strategies for parallelizing algorithms which are usually implemented as iterative algorithms. Specifically, we will be looking at the HOGWILD!, Shotgun and distributed averaging algorithms and how parallelization with these algorithms improves performance compared to the standard counterparts. We will compare the HOGWILD!, Shotgun and distributed averaging algorithms against one another on similar data sets to compare their efficiency and runtimes.  We will also compare these parallelized versions against an iterative algorithm in order to compare the speed gain of the new methods.  \\
+	
+	Not all of these algorithms parallelize in the traditional sense.  For instance, the Shotgun algorithm approach parallelizes the minimization process itself to produce a speed up as opposed to splitting up the data set.  Because of the difference in the algorithm implementation we will likely see the utilization of the processor cores differ dramatically. Because of the difference in implementation of these algorithms it will be important to compare them across different computational environments. The algorithms will be compared on computers with 2, 4, and 8 cores to see how the speed up scales with computer resources.  To ensure we are fairly comparing the algorithms we will also compare them against a standard iterative approach, which we will use as a baseline. \\
+	
+\textbf{Software:}
+
+	The software will primarily be written in Java.  A total of four algorithms will need to be written.  Three of these algorithms will be the parallelized versions discussed in the papers and the fourth will be an iterative algorithm with which we can compare against the parallelized versions.  We will also need to write up a framework to run the tests for each of the algorithms and the code to keep track of the statistics and runtimes for the algorithm runtime analysis. \\
+
+\textbf{Papers:}
+	\begin{enumerate}
+		\item Bradley, Joseph et al. "Parallel Coordinate Descent for L1-Regularized Loss Minimization" , International Conference on Machine Learning (2011), 
+			\url{http://select.cs.cmu.edu/publications/scripts/papers.cgi?Bradley+al:icml11parlasso}
+		\item Boyd, Stephen et al. "Fast Linear Iterations for Distributed Averaging", Systems and Control Letters:53:65-78 (2004)
+			\url{http://www.stanford.edu/~boyd/papers/pdf/fastavg.pdf}
+		\item Niu, Feng, et al. "HOGWILD!: A Lock-Free Approach to Parallelizing Stochastic Gradient Descent." arXiv:1106.5730v2 (2011), 
+			\url{http://pages.cs.wisc.edu/~brecht/papers/hogwildTR.pdf}	
+		\item Zhang, Yuchen, et al. "Communication-Efficient Algorithms for Statistical Optimization." arXiv:1209.4129v1 (2012), 
+			\url{http://arxiv.org/pdf/1209.4129.pdf}
+	\end{enumerate}
+	
+\textbf{Teammates:} 
+
+David Leen and Brian Walker\\
+
+\textbf{Milestone:}
+
+For the milestone we will have the HOGWILD! algorithm completed with the results showing the linear decrease in the runtime when compared to an iterative algorithm.  The HOGWILD! implementation of a parallelized logistical descent. We will compare the runtime analysis with the typical iterative SGD algorithm.  The same data set will be used for both algorithms to ensure a fair comparison.  We will report the results of running the algorithms on machines with a different number of processor cores to compare how the running times are affected by processor resources.
+
+\end{document}
