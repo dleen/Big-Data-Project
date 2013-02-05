@@ -18,30 +18,51 @@
 	
 \textbf{Project Idea:}
 
-	We will compare parallel implementations of several algorithms which are generally considered sequential. Specifically, we will look at the Hogwild!, Shotgun and distributed averaging algorithms and how parallelization with these algorithms improves performance. We will compare the Hogwild!, Shotgun and distributed averaging algorithms against one another on similar data sets to compare the speedup and runtimes.  We will use a sequential implementation as a baseline against which to compare the parallel versions.  \\
+	We will compare parallel implementations of several algorithms which are generally considered sequential. 
+Specifically, we will look at the Hogwild!, Shotgun and distributed averaging algorithms and how parallelization with these 
+algorithms improves performance. We will compare the Hogwild!, Shotgun and distributed averaging algorithms against 
+one another on similar data sets to compare the speedup and runtimes.  We will use a sequential implementation as a 
+baseline against which to compare the parallel versions.  \\
 	
-	Not all of these algorithms parallelize in the traditional sense. The Hogwild! algorithm takes advantage of sparsity to parallelize stochastic gradient descent. The idea is simple. With sparse data, individual SGD steps only update a small part of the weights. In Hogwild! each processor is allowed to modify the weights in parallel without locking, relying on the sparsity of the updates to prevent processors overwriting one another. Even when overwriting occurs the error introduced is minor.
-	The Shotgun algorithm uses coordinate descent and parallelizes over the features rather than over the samples. This is a nice contrast to the Hogwild! algorithm. Shotgun makes $p$ coordinate updates in parallel.
-	Finally, distributed averaging uses each processor to optimize a subset of the data and averages to combine the result. 
-	The algorithms will be compared on computers with 2, 4, and 8 cores to see how the speed up scales with computer resources.
+	Not all of these algorithms parallelize in the traditional sense. The Hogwild! algorithm takes advantage of sparsity to 
+parallelize stochastic gradient descent. The idea is simple. With sparse data, individual SGD steps only update a small part 
+of the weights. In Hogwild! each processor is allowed to modify the weights in parallel without locking, relying on the 
+sparsity of the updates to prevent processors overwriting one another. Even when overwriting occurs the error introduced is 
+minor.
+	The Shotgun algorithm uses coordinate descent and parallelizes over the features rather than over the samples. This 
+is a nice contrast to the Hogwild! algorithm. Shotgun makes $p$ coordinate updates in parallel.
+	Finally, distributed averaging uses each processor to optimize a subset of the data and averages to combine the 
+result. 
+	The algorithms will be compared on computers with 2, 4, and 8 cores to see how the speed up scales with computer 
+resources.
 		
 		
 \textbf{Software:}
 
-	The software will primarily be written in Java.  A total of four algorithms will need to be written.  Three of these algorithms will be the parallelized versions discussed in the papers and the fourth will be an iterative algorithm with which we can compare against the parallelized versions. We will also need to write up a framework to run the tests for each of the algorithms and the code to keep track of the statistics and runtimes for the algorithm runtime analysis. \\
+	The software will primarily be written in Java.  A total of four algorithms will need to be written.  Three of these 
+algorithms will be the parallelized versions discussed in the papers and the fourth will be an iterative algorithm with which 
+we can compare against the parallelized versions. We will also need to write up a framework to run the tests for each of the 
+algorithms and the code to keep track of the statistics and runtimes for the algorithm runtime analysis. \\
 \textbf{Papers:}
 	\begin{enumerate}
-		\item Bradley, Joseph et al. "Parallel Coordinate Descent for L1-Regularized Loss Minimization" , International Conference on Machine Learning (2011), 
+		\item Bradley, Joseph et al. "Parallel Coordinate Descent for L1-Regularized Loss Minimization" , International 
+Conference on Machine Learning (2011), 
 			\url{http://select.cs.cmu.edu/publications/scripts/papers.cgi?Bradley+al:icml11parlasso}
-		\item Boyd, Stephen et al. "Fast Linear Iterations for Distributed Averaging", Systems and Control Letters:53:65-78 (2004)
+		\item Boyd, Stephen et al. "Fast Linear Iterations for Distributed Averaging", Systems and Control Letters:
+53:65-78 (2004)
 			\url{http://www.stanford.edu/~boyd/papers/pdf/fastavg.pdf}
-		\item Niu, Feng, et al. "HOGWILD!: A Lock-Free Approach to Parallelizing Stochastic Gradient Descent." arXiv:1106.5730v2 (2011), 
+		\item Niu, Feng, et al. "HOGWILD!: A Lock-Free Approach to Parallelizing Stochastic Gradient Descent." arXiv:
+1106.5730v2 (2011), 
 			\url{http://pages.cs.wisc.edu/~brecht/papers/hogwildTR.pdf}	
-		\item Zhang, Yuchen, et al. "Communication-Efficient Algorithms for Statistical Optimization." arXiv:1209.4129v1 (2012), 
+		\item Zhang, Yuchen, et al. "Communication-Efficient Algorithms for Statistical Optimization." arXiv:1209.4129v1 
+(2012), 
 			\url{http://arxiv.org/pdf/1209.4129.pdf}
 	\end{enumerate}
 \textbf{Milestone:}
 
-For the milestone we will implement the Hogwild! algorithm and demonstrate an approximately linear speedup over the sequential algorithm.  We will initially run Hogwild! for the Click Prediction logistic regression problem from homework one before moving onto different classification algorithms. We will report the results of running the algorithms on machines with a different number of processor cores to compare how the running times are affected by processor resources.
+For the milestone we will implement the Hogwild! algorithm and demonstrate an approximately linear speedup over the 
+sequential algorithm.  We will initially run Hogwild! for the Click Prediction logistic regression problem from homework one 
+before moving onto different classification algorithms. We will report the results of running the algorithms on machines with 
+a different number of processor cores to compare how the running times are affected by processor resources.
 
 \end{document}
