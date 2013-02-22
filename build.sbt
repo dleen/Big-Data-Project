@@ -5,6 +5,9 @@ version := "1.0"
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies  ++= Seq(
+            "org.scalanlp" %% "breeze-math" % "0.1",
+            "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.1",
+            "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.1"
             )
 
 resolvers ++= Seq(

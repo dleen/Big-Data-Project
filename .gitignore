@@ -1,5 +1,7 @@
 target/
 
+src/main/resources/*
+
 *.gz
 
 *.pdf
