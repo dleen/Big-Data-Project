@@ -1,4 +1,4 @@
-package main.scala.sgd
+package main.scala.LR_SGD
 
 import scala.io.Source
 
@@ -29,20 +29,15 @@ case class DataLine(clicked: Int,
     }
 }
 
-
 // Object representing one dataset
 case class DataSet(datatype: String) {
     val filename: String = datatype match {
         case "training" => "train.txt"
         case "test" => "test.txt"
     }
-
     // Open resource, either training or test data
-    // and create iterator which iterates over each
-    // line and returns a DataLine
     val url = getClass.getResource("/" + filename)
-    val dataFile = Source.fromURL(url)
-    val dataIterator = dataFile.getLines.map(parseLine)
+    println(url)
 
     val tokensLength: Int = datatype match {
         case "training" => 141063
@@ -82,14 +77,14 @@ case class DataSet(datatype: String) {
         splitOnComma.toSet
     }
 
-    def resetDataIterator: DataSet = {
-        if (this.dataIterator.hasNext) this
-        else new DataSet(datatype)
-    }
+    // def resetDataIterator: DataSet = {
+    //     if (this.dataIterator.hasNext) this
+    //     else new DataSet(datatype)
+    // }
 
-    def closeData = {
-        dataFile.close
-    }
+    // def closeData = {
+    //     dataFile.close
+    // }
 }
 
 case object TestLabels {
