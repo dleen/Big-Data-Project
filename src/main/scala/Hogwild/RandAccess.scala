@@ -10,18 +10,26 @@ object BigDataProcessor extends App {
     val training = DataSet("training")
     println("Done loading data.")
 
-    val w = fit(training)
-    println(w.size)
-    println(SGDfunctions.l2norm(w))
+    init(training)
+    fit(training)
+    println(SGDfunctions.w.size)
+    println(SGDfunctions.l2norm(SGDfunctions.w))
 
     val test = DataSet("test")
-    val (a, b) = predict(test, w)
+    val (a, b) = predict(test)
     println(a)
     println(b)
 
-    def fit(dataSet: DataSet): collection.mutable.Map[Int, Double] = {
-        var w = collection.mutable.Map[Int, Double]().withDefaultValue(0.0)
+    def init(dataSet: DataSet): Unit = {
+        for (line <- dataSet.allData) {
+            val l = SGDfunctions.parseLine(line, dataSet.datatype)
+            SGDfunctions.initWeights(l.tokens)
+        }
+    }
+
+    def fit(dataSet: DataSet): Unit = {
         val eta = 0.05
+        var n = 0
 
         for (line <- dataSet.allData) {
             val l = SGDfunctions.parseLine(line, dataSet.datatype)
@@ -33,16 +41,16 @@ object BigDataProcessor extends App {
 
             // // The predicted label P(Y=1|X)
             // // this is a double, not binary
-            val yHat: Double = SGDfunctions.predictLabel(x, w)
+            val yHat: Double = SGDfunctions.predictLabel(x)
 
             // // Calculate the new weights using SGD
-            w = SGDfunctions.updateWeights(y, yHat, x, w, eta)
+            SGDfunctions.updateWeights(y, yHat, x, eta)
+            // println(n)
+            n = n + 1
         }
-    w
     }
 
-    def predict(dataSet: DataSet,
-        w: collection.mutable.Map[Int, Double]): (Double, Double) = {
+    def predict(dataSet: DataSet): (Double, Double) = {
         val baseLine = 0.03365528
         val labels = TestLabels.label
         val n = labels.length
@@ -54,7 +62,7 @@ object BigDataProcessor extends App {
             val l = SGDfunctions.parseLine(line, dataSet.datatype)
             val x = l.tokens
 
-            val yHat: Double = SGDfunctions.predictLabel(x, w)
+            val yHat: Double = SGDfunctions.predictLabel(x)
 
             rmse += pow(label - yHat, 2)
             rmseBaseLine += pow(label - baseLine, 2)
@@ -65,12 +73,17 @@ object BigDataProcessor extends App {
 }
 
 object SGDfunctions {
+    var w = collection.mutable.Map[Int, Double]()
+
+    def initWeights(x: Set[Int]): Unit = {
+        for (i <- x) w.getOrElseUpdate(i, 0.0)
+    }
+
     // Make a prediction for the label
-    def predictLabel(x: Set[Int],
-            w: collection.mutable.Map[Int, Double]): Double = {
+    def predictLabel(x: Set[Int]): Double = {
         var dot = 0.0
         for (i <- x) {
-            dot += w(i)
+            dot += w.getOrElseUpdate(i, 0.0)
         }
         exp(dot) / (1 + exp(dot)) // logistic regression function
     }
@@ -78,13 +91,11 @@ object SGDfunctions {
     // Update the weight vector
     def updateWeights(y: Double, yHat: Double,
             x: Set[Int],
-            w: collection.mutable.Map[Int, Double],
-            eta: Double): collection.mutable.Map[Int, Double] = {
+            eta: Double): Unit = {
         val grad: Double = (y - yHat) * eta // gradient
         for (i <- x) {
-            w(i) += grad // add to the weights
+            w(i) = w.getOrElseUpdate(i, 0.0) + grad // add to the weights
         }
-        w
     }
 
     def parseLine(line: String, datatype: String): DataLine = {
