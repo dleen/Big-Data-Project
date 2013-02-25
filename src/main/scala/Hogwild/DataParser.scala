@@ -33,9 +33,6 @@ case class DataSet(datatype: String) {
             splitOnComma.toArray
         }
         val splitOnPipe = line.split('|')
-        // The first n - 1 elements are not tokens
-        // val nonToken = splitOnPipe.init.map(_.toInt)
-        // The last element is a token
         // We parse the token into a set of ints
         val tokens = parseTokens(splitOnPipe.last)
 
