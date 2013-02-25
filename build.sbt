@@ -2,12 +2,11 @@ name := "Big Data Project"
 
 version := "1.0"
 
+scalaVersion := "2.10.0"
+
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies  ++= Seq(
-            "org.scalanlp" %% "breeze-math" % "0.1",
-            "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.1",
-            "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.1"
             )
 
 resolvers ++= Seq(
@@ -20,3 +19,5 @@ resolvers ++= Seq(
             )
 
 mainClass in (Compile, run) := Some("main.scala.Hogwild.BigDataProcessor")
+
+javaOptions += "-Xmx2048M"

@@ -3,6 +3,9 @@ package main.scala.Hogwild
 
 import scala.math.{exp, sqrt, pow}
 
+import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConverters._
+
 // import scala.collection.mutable.Map
 
 
@@ -73,7 +76,8 @@ object BigDataProcessor extends App {
 }
 
 object SGDfunctions {
-    var w = collection.mutable.Map[Int, Double]()
+    // var w = collection.mutable.Map[Int, Double]()
+    var w = new ConcurrentHashMap[Int, Double]().asScala
 
     def initWeights(x: Set[Int]): Unit = {
         for (i <- x) w.getOrElseUpdate(i, 0.0)
@@ -120,7 +124,7 @@ object SGDfunctions {
         }
     }
 
-    def l2norm(x: collection.mutable.Map[Int, Double]): Double = {
+    def l2norm(x: collection.concurrent.Map[Int, Double]): Double = {
         var norm = 0.0
         for (v <- x.values) {
             norm += v * v

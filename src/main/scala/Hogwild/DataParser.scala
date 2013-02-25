@@ -22,7 +22,7 @@ case class DataSet(datatype: String) {
     // Open resource, either training or test data
     val url = getClass.getResource("/" + filename)
     val dataIterator = Source.fromURL(url).getLines
-    val allData = dataIterator.toArray
+    val allData = dataIterator.toVector
 
     println(allData.length)
 
@@ -39,6 +39,28 @@ case class DataSet(datatype: String) {
         case "test" => 1016553
     }
     val offset: Int = 5
+
+    def parseLine(line: String): DataLine = {
+        def parseTokens(tokenString: String): Set[Int] = {
+            val splitOnComma = tokenString.split(',').map(_.toInt)
+            splitOnComma.toSet
+        }
+        val splitOnPipe = line.split('|')
+        // The first n - 1 elements are not tokens
+        val nonToken = splitOnPipe.init.map(_.toInt)
+        // The last element is a token
+        // We parse the token into a set of ints
+        val tokens = parseTokens(splitOnPipe.last)
+
+        datatype match {
+            case "training" => DataLine(nonToken(0),
+                nonToken(1), nonToken(2), nonToken(3),
+                nonToken(4), nonToken(5), tokens)
+            case "test" => DataLine(-1,
+                nonToken(0), nonToken(1), nonToken(2),
+                nonToken(3), nonToken(4), tokens)
+        }
+    }
 }
 
 case object TestLabels {
