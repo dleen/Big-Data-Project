@@ -19,5 +19,6 @@ resolvers ++= Seq(
             )
 
 mainClass in (Compile, run) := Some("main.scala.Hogwild.BigDataProcessor")
+//mainClass in (Compile, run) := Some("Main")
 
 javaOptions += "-Xmx2048M"
