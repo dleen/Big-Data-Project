@@ -59,15 +59,17 @@ University of Washington \\
 
 \begin{abstract}
 {\em Milestone progress:} We implemented the Hogwild! algorithm and demonstrated an approximately linear speedup over the
-sequential stochastic gradient descent (SGD) algorithm.  We used the click prediction dataset and its sparse search token features to achieve a near optimal rate of convergence.
+sequential stochastic gradient descent (SGD) algorithm.  We used the click prediction dataset and its sparse search token features to achieve a near optimal rate of convergence. We discuss the many issues arising with parallel algorithms and their implementations.
 \end{abstract}
 
 \section{Introduction}
 We study three parallel algorithms: Hogwild! \cite{niu2011hogwild}, Shotgun \cite{bradley2011parallel} and distributed averaging \cite{zhang2012comunication}. Each approaches a similar problem in a distinct manner. Hogwild! and distributed averaging parallelize stochastic gradient descent (SGD) over samples, whereas Shotgun tackles the orthogonal problem of parallelizing $L_1$-regularized models over the features.
 
+Hogwild! is a parallel version of SGD \cite{niu2011hogwild, zinkevich2010parallelized}. The algorithm is intended for problems on the order of several terabytes of data. It can be run quite effectively on inexpensive multi-core systems taking advantage of the low latency and high throughput of the data being stored in RAM or a RAID disk setup close to the processors. In these systems the bottlenecks arise from synchronizing and locking operations on the threads reading and writing shared memory. Regularization can also be applied in parallel settings \cite{langford2009slow, agarwal2011distributed}.
 
+MapReduce in contrast deals with hundreds and thousands of terabytes of data but is not well suited for online, iterative algorithms like SGD. MapReduce suffers from low throughputs due to fault tolerance and redundancy. Distributed averaging is a simple version of a distributed optimization algorithm \cite{dekel2012optimal, agarwal2011distributed}. The method distributes the data samples evenly in group to some number of machines. Each machine performs a separate minimization of each group independently of one another. The estimates of the weights from each group are then averaged hence the name.
 
-Brief description of each algorithm. Context. Why we would use one over another?
+Shotgun provides a parallel solution to the high-dimensional problem with a large number of features using $L_1$-regularization \cite{ng2004feature}. In cases like this the dimensionality of the problem often dwarfs the number of samples. Once again the method involves taking a sequential algorithm, coordinate descent and simply parallelizes it, this time over features. The algorithm makes the coordinate updates in parallel to provide a speedup.
 
 \section{Method}
 The weight vector $w$ for logistic regression is updated according to the usual SGD equation:
@@ -132,19 +134,18 @@ Clever things.
 Challenge: can this algorithm work on data that can be separated into sparse and non-sparse?
 
 \section{Results}
-\label{headings}
 Graph of the speed up compared to sequential.
 
 Graph of errors?
 
-\subsection{Near linear speedup}
 We accomplish a linear speedup over the sequential.
 
 \section{Further work}
-The next step in this project is to implement both Shotgun for sparse logistic regression and distributed averaging for logistic regression. We will compare these algorithms amongst each other and to Hogwild! where appropriate. We will note where each algorithm performs best and where they fall short. We will have the baseline sequential predictions for each data set against which we can judge convergence and error rates.
+The next step in this project is to implement Shotgun for sparse logistic regression and distributed averaging for logistic regression. We will compare these algorithms amongst each other and to Hogwild! where appropriate. We will note where each algorithm performs best and where they fall short. We will have the baseline sequential predictions for each data set against which we can judge convergence and error rates.
 
-We will then expand the algorithms from logistic regression to linear regression and support vector machines and potentially matrix completions. The data sets will be expanded from the Click Prediction set to 
+We will then expand the algorithms from logistic regression to linear regression and support vector machines and potentially matrix completions. The data sets will be expanded from the Click Prediction set.
 
+We will investigate the issue of non-sparse data contaminating the Hogwild! algorithm. We will investigate whether one can perform regularization during Hogwild!
 
 \subsubsection*{References}
 

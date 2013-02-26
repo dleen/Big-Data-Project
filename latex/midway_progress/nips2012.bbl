@@ -16,4 +16,32 @@ Yuchen Zhang, John~C Duchi, and Martin Wainwright.
 \newblock Comunication-efficient algorithms for statistical optimization.
 \newblock {\em arXiv preprint arXiv:1209.4129}, 2012.
 
+\bibitem{zinkevich2010parallelized}
+Martin Zinkevich, Markus Weimer, Alex Smola, and Lihong Li.
+\newblock Parallelized stochastic gradient descent.
+\newblock {\em Advances in Neural Information Processing Systems}, 23(23):1--9,
+  2010.
+
+\bibitem{langford2009slow}
+John Langford, Alexander Smola, and Martin Zinkevich.
+\newblock Slow learners are fast.
+\newblock {\em arXiv preprint arXiv:0911.0491}, 2009.
+
+\bibitem{agarwal2011distributed}
+Alekh Agarwal and John~C Duchi.
+\newblock Distributed delayed stochastic optimization.
+\newblock {\em arXiv preprint arXiv:1104.5525}, 2011.
+
+\bibitem{dekel2012optimal}
+Ofer Dekel, Ran Gilad-Bachrach, Ohad Shamir, and Lin Xiao.
+\newblock Optimal distributed online prediction using mini-batches.
+\newblock {\em The Journal of Machine Learning Research}, 13:165--202, 2012.
+
+\bibitem{ng2004feature}
+Andrew~Y Ng.
+\newblock Feature selection, l 1 vs. l 2 regularization, and rotational
+  invariance.
+\newblock In {\em Proceedings of the twenty-first international conference on
+  Machine learning}, page~78. ACM, 2004.
+
 \end{thebibliography}
