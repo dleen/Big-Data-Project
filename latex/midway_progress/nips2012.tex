@@ -101,44 +101,34 @@ Some java code here demonstrating what we actually do. \textcolor{red}{[BRIAN UP
   \EndFor
   \EndLoop
   \end{algorithmic}
+  \label{alg1}
 \end{algorithm}
 The component wise addition of elements from the weight vector is assumed to be atomic. In practice floats are not atomic and require extra care.
 
 \section{Challenges and issues}
 \label{gen_inst}
 \subsection{Parallel and concurrent programming}
-Parallel programming is hard. The solution in this case is to ignore all the problems programming languages try to solve and just write. Atomic operations.
+Parallel programming is hard. The Hogwild! solution is to ignore all the major issues associated with parallelism. 
 
-Atomic for int long, not for double in java?
+\textcolor{red}{[BRIAN CAN YOU MENTION HOW YOU USED AN ARRAY OF DOUBLES? THANKS !!:)]}
 
-Volatile.
-
-Initialize the map.
-
-Compromise by using array of doubles. Setting ahead of time.
-
-AIG(?) compromise version is basically concurrenthashmap in java.
-
-
+The Hogwild! paper discusses a compromise between full synchronization and locking and no locking at all which they call AIG. AIG locks all the elements that are being updated in the for loop in algorithm \ref{alg1}. This is essentially what ConcurrentHashMap in Java does.
 
 \subsection{Storing data in memory}
-Load and parse all data into memory. Reading data bottleneck. Large amounts of memory available these days. 8GB standard.
+The Hogwild! algorithm relies on extremely fast throughput of data from memory or disk. Reading from disk is not fast enough to supply data as needed by a 4-6 core machine. This could be possible with a RAID setup but at the time this was not available.
 
-Break data up into chunks. How to deal with this?
+The current solution is to load and parse all the data into RAM. 8-16GB of RAM is fairly standard these days, which is sufficient for the Click Prediction set, but it is not enough for terabyte data sets. We need to investigate how to break data sets into manageable chunks while still sampling uniformly as needed by the algorithms.
 
-Caching?
-
-Clever things.
+We suspect the Hogwild! paper uses sophisticated caching and data and memory management to process terabyte sized data on a single machine. 
 
 \subsection{Non-sparse data}
-Challenge: can this algorithm work on data that can be separated into sparse and non-sparse?
+A problem that we immediately noticed was whether Hogwild! can work on data that has both sparse and non-sparse components? The Click Prediction data has five dense values: age, gender, etc\ldots They are updated on every iteration. The tokens however are very sparse. Can we apply the Hogwild! algorithm in this case without ignoring the dense data?
 
 \section{Results}
 Graph of the speed up compared to sequential.
-
 Graph of errors?
 
-We accomplish a linear speedup over the sequential.
+\textcolor{red}{[BRIAN DO WE HAVE ANY POINTS FOR RESULTS? THANKS !!:)]}
 
 \section{Further work}
 The next step in this project is to implement Shotgun for sparse logistic regression and distributed averaging for logistic regression. We will compare these algorithms amongst each other and to Hogwild! where appropriate. We will note where each algorithm performs best and where they fall short. We will have the baseline sequential predictions for each data set against which we can judge convergence and error rates.
