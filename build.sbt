@@ -18,7 +18,7 @@ resolvers ++= Seq(
             "Sonatype tools" at "https://oss.sonatype.org/content/groups/scala-tools/"
             )
 
-mainClass in (Compile, run) := Some("main.scala.Hogwild.BigDataProcessor")
-//mainClass in (Compile, run) := Some("Main")
+//mainClass in (Compile, run) := Some("main.scala.Hogwild.BigDataProcessor")
+mainClass in (Compile, run) := Some("Main")
 
 javaOptions += "-Xmx2048M"

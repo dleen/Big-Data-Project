@@ -23,8 +23,7 @@ morecomment=[s][\color{javadocblue}]{/**}{*/}}
 %\documentstyle[nips12submit_09,times,art10]{article} % For LaTeX 2.09
 
 
-\title{Formatting Instructions for NIPS 2012}
-
+\title{A Comparison of Parallel Algorithms:\\ {\Large Hogwild!, Shotgun and Distributed Averaging}}
 
 \author{
 David A. Leen \\
@@ -55,11 +54,12 @@ University of Washington \\
 \maketitle
 
 \begin{abstract}
-{\em Milestone progress:} We implement the Hogwild! algorithm and demonstrate an approximately linear speedup over the 
-sequential stochastic gradient descent (SGD) algorithm.  We use the click prediction dataset and its sparse search token features to achieve a near optimal rate of convergence.
+{\em Milestone progress:} We implemented the Hogwild! algorithm and demonstrated an approximately linear speedup over the 
+sequential stochastic gradient descent (SGD) algorithm.  We used the click prediction dataset and its sparse search token features to achieve a near optimal rate of convergence.
 \end{abstract}
 
 \section{Introduction}
+Brief description of each algorithm. Context. Why we would use one over another? 
 
 \section{Method}
 
@@ -73,35 +73,55 @@ for (i <- (0 until 20).par) m(i % 10) += 1.0 // update
 For the non-parallel version of this program we expect a mapping  \verb+0->2.0+, \verb+1->2.0+,\ldots. This parallel version produces an output like \verb+0->1.0+, \verb+1->2.0+, \verb+1->1.0+\ldots. Where in some cases the threads have overwritten each other (hopefully not many in the full case).
 
 This is the concept that we will use.
+
 \subsection{Algorithm}
+Some java code here demonstrating what we actually do.
+
 
 \section{Challenges and issues}
 \label{gen_inst}
-
 \subsection{Parallel and concurrent programming}
+Parallel programming is hard. The solution in this case is to ignore all the problems programming languages try to solve and just write. Atomic operations.
+
+Atomic for int long, not for double in java?
+
+Volatile.
+
+Initialize the map.
+
+Compromise by using array of doubles. Setting ahead of time.
+
+AIG(?) compromise version is basically concurrenthashmap in java.
+
+
 
 \subsection{Storing data in memory}
+Load and parse all data into memory. Reading data bottleneck. Large amounts of memory available these days. 8GB standard.
+
+Break data up into chunks. How to deal with this?
+
+Caching?
+
+Clever things.
 
 \subsection{Non-sparse data}
+Challenge: can this algorithm work on data that can be separated into sparse and non-sparse?
 
 \section{Results}
 \label{headings}
+Graph of the speed up compared to sequential.
+
+Graph of errors?
 
 \subsection{Near linear speedup}
-
-Second level headings are lower case (except for first word and proper nouns),
-flush left, bold and in point size 10. One line space before the second level
-heading and 1/2~line space after the second level heading.
+We accomplish a linear speedup over the sequential.
 
 \section{Further work}
-Do not change any aspects of the formatting parameters in the style files.
-In particular, do not modify the width or length of the rectangle the text
-should fit into, and do not change font sizes (except perhaps in the
-\textbf{References} section; see below). Please note that pages should be
-numbered.
+Implement Shotgun for logistic regression for sparse logistic regression. Then implement distributed averaging. {\bf Then} move onto new datasets.
 
 
 \subsubsection*{References}
+More papers?
 \cite{niu2011hogwild}
 \cite{bradley2011parallel}
 \cite{zhang2012comunication}
