@@ -18,7 +18,6 @@ case class DataSet(datatype: String) {
     val dataIterator = Source.fromURL(url).getLines.map(parseLine)
 
     var allData = dataIterator.toArray
-    // var allData = dataIterator.toVector
 
     println(allData.length)
 

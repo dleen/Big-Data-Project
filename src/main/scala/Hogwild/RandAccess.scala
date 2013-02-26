@@ -24,7 +24,7 @@ object BigDataProcessor extends testing.Benchmark {
 	init(tr) // initialize the weights in the training set to zero
 
 	// timing start
-	val now = System.nanoTime
+	// val now = System.nanoTime
 
 	def run() = {
 		for (i <- 0 until 1) {
@@ -38,8 +38,8 @@ object BigDataProcessor extends testing.Benchmark {
 	}
 
 	// timing stop
-	val micros = (System.nanoTime - now) / 1000000000
-  println("%d seconds".format(micros))
+	// val micros = (System.nanoTime - now) / 1000000000
+  // println("%d seconds".format(micros))
 
 
 	def init(dataSet: DataSet): Unit = {

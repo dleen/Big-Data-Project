@@ -1,8 +1,12 @@
 \documentclass{article} % For LaTeX2e
 \usepackage{nips12submit_e,times}
 
-
+\usepackage{color}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
 \usepackage{listings}
+
+
 \definecolor{javared}{rgb}{0.6,0,0} % for strings
 \definecolor{javagreen}{rgb}{0.25,0.5,0.35} % comments
 \definecolor{javapurple}{rgb}{0.5,0,0.35} % keywords
@@ -54,29 +58,49 @@ University of Washington \\
 \maketitle
 
 \begin{abstract}
-{\em Milestone progress:} We implemented the Hogwild! algorithm and demonstrated an approximately linear speedup over the 
+{\em Milestone progress:} We implemented the Hogwild! algorithm and demonstrated an approximately linear speedup over the
 sequential stochastic gradient descent (SGD) algorithm.  We used the click prediction dataset and its sparse search token features to achieve a near optimal rate of convergence.
 \end{abstract}
 
 \section{Introduction}
-Brief description of each algorithm. Context. Why we would use one over another? 
+We study three parallel algorithms: Hogwild! \cite{niu2011hogwild}, Shotgun \cite{bradley2011parallel} and distributed averaging \cite{zhang2012comunication}. Each approaches a similar problem in a distinct manner. Hogwild! and distributed averaging parallelize stochastic gradient descent (SGD) over samples, whereas Shotgun tackles the orthogonal problem of parallelizing $L_1$-regularized models over the features.
+
+
+
+Brief description of each algorithm. Context. Why we would use one over another?
 
 \section{Method}
+The weight vector $w$ for logistic regression is updated according to the usual SGD equation:
+\begin{equation}
+w_i^{t+1} \leftarrow w_i^t + \eta \bigg[y^t - \frac{\exp{(w^t \cdot x^t)}}{1 + \exp{(w^t \cdot x^t)}} \bigg]x_i^t.
+\end{equation}
 
+ 
 \subsection{Proof of concept}
-A fundamental example of the concept in Scala is:
+The minimal example demonstrating the Hogwild! concept in practice for a simple mapping is (in Scala for brevity):
 \begin{lstlisting}
-val m = collection.mutable.Map[Int, Double]() // create mapping
+val m = collection.mutable.Map[Int, Double]() // create a mapping
 for (i <- (0 until 10)) m.put(i, 0.0) // initialize key values to 0.0
-for (i <- (0 until 20).par) m(i % 10) += 1.0 // update 
+for (i <- (0 until 20).par) m(i % 10) += 1.0 // update
 \end{lstlisting}
-For the non-parallel version of this program we expect a mapping  \verb+0->2.0+, \verb+1->2.0+,\ldots. This parallel version produces an output like \verb+0->1.0+, \verb+1->2.0+, \verb+1->1.0+\ldots. Where in some cases the threads have overwritten each other (hopefully not many in the full case).
-
-This is the concept that we will use.
+The sequential version of this program gives a mapping \verb+0->2.0+, \verb+1->2.0+,\ldots. The parallel version (implemented from the \verb+.par+ method) produces a non-deterministic output with values either \verb+1.0+ or \verb+2.0+ i.e.: \verb+0->1.0+, \verb+1->2.0+, \verb+1->1.0+\ldots. Here we have experienced a race condition caused by threads overwriting one another. The Hogwild! algorithm relies on the sparsity of the data to ensure that updates do not operate simultaneously on the same keys. It relies on the same sparsity to parallelize the sequential algorithm.
 
 \subsection{Algorithm}
-Some java code here demonstrating what we actually do.
+Some java code here demonstrating what we actually do. \textcolor{red}{[BRIAN UPDATE THIS WITH SOME CODE OR SOMETHING THANKS !!:)]}.
+\begin{algorithm}
+  \caption{Hogwild! update step for a single processor}
 
+  \begin{algorithmic}
+  \Loop
+  \State Randomly permute data
+  \State Read current state of features $x^t$
+  \For {i in $x^t$.keys}
+  \State $w^{t+1}_i \leftarrow w_i^t - \eta x_i^t \nabla L(\mathbf{w}, \mathbf{x}, \mathbf{y})$
+  \EndFor
+  \EndLoop
+  \end{algorithmic}
+\end{algorithm}
+The component wise addition of elements from the weight vector is assumed to be atomic. In practice floats are not atomic and require extra care.
 
 \section{Challenges and issues}
 \label{gen_inst}
@@ -117,20 +141,18 @@ Graph of errors?
 We accomplish a linear speedup over the sequential.
 
 \section{Further work}
-Implement Shotgun for logistic regression for sparse logistic regression. Then implement distributed averaging. {\bf Then} move onto new datasets.
+The next step in this project is to implement both Shotgun for sparse logistic regression and distributed averaging for logistic regression. We will compare these algorithms amongst each other and to Hogwild! where appropriate. We will note where each algorithm performs best and where they fall short. We will have the baseline sequential predictions for each data set against which we can judge convergence and error rates.
+
+We will then expand the algorithms from logistic regression to linear regression and support vector machines and potentially matrix completions. The data sets will be expanded from the Click Prediction set to 
 
 
 \subsubsection*{References}
-More papers?
-\cite{niu2011hogwild}
-\cite{bradley2011parallel}
-\cite{zhang2012comunication}
 
 \begingroup
 \renewcommand{\section}[2]{}%
 %\renewcommand{\chapter}[2]{}% for other classes
 \bibliographystyle{unsrt}
-\bibliography{references}	
+\bibliography{references}
 \endgroup
 
 
