@@ -4,8 +4,6 @@ src/main/resources/*
 
 *.gz
 
-*.pdf
-
 *.out
 
 *.log
@@ -13,3 +11,5 @@ src/main/resources/*
 *.aux
 
 *.class
+
+latex/midway_progress/.Rhistory
