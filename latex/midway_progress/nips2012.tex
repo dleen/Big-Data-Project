@@ -5,7 +5,7 @@
 \usepackage{algpseudocode}
 \usepackage{algorithm}
 \usepackage{listings}
-
+\usepackage{graphicx}
 
 \definecolor{javared}{rgb}{0.6,0,0} % for strings
 \definecolor{javagreen}{rgb}{0.25,0.5,0.35} % comments
@@ -36,7 +36,7 @@ University of Washington \\
 \texttt{dleen@uw.edu} \\
 \And
 Brian D. Walker \\
-Computer Science \& Engineering \\
+Department of Computer Science \& Engineering \\
 University of Washington \\
 \texttt{walker7734@gmail.com} \\
 }
@@ -88,7 +88,7 @@ for (i <- (0 until 20).par) m(i % 10) += 1.0 // update
 The sequential version of this program gives a mapping \verb+0->2.0+, \verb+1->2.0+,\ldots. The parallel version (implemented from the \verb+.par+ method) produces a non-deterministic output with values either \verb+1.0+ or \verb+2.0+ i.e.: \verb+0->1.0+, \verb+1->2.0+, \verb+1->1.0+\ldots. Here we have experienced a race condition caused by threads overwriting one another. The Hogwild! algorithm relies on the sparsity of the data to ensure that updates do not operate simultaneously on the same keys. It relies on the same sparsity to parallelize the sequential algorithm.
 
 \subsection{Algorithm}
-Some java code here demonstrating what we actually do. \textcolor{red}{[BRIAN UPDATE THIS WITH SOME CODE OR SOMETHING THANKS !!:)]}.
+
 \begin{algorithm}
   \caption{Hogwild! update step for a single processor}
 
@@ -103,14 +103,13 @@ Some java code here demonstrating what we actually do. \textcolor{red}{[BRIAN UP
   \end{algorithmic}
   \label{alg1}
 \end{algorithm}
+
 The component wise addition of elements from the weight vector is assumed to be atomic. In practice floats are not atomic and require extra care.
 
 \section{Challenges and issues}
 \label{gen_inst}
 \subsection{Parallel and concurrent programming}
 Parallel programming is hard. The Hogwild! solution is to ignore all the major issues associated with parallelism. 
-
-\textcolor{red}{[BRIAN CAN YOU MENTION HOW YOU USED AN ARRAY OF DOUBLES? THANKS !!:)]}
 
 The Hogwild! paper discusses a compromise between full synchronization and locking and no locking at all which they call AIG. AIG locks all the elements that are being updated in the for loop in algorithm \ref{alg1}. This is essentially what ConcurrentHashMap in Java does.
 
@@ -125,10 +124,9 @@ We suspect the Hogwild! paper uses sophisticated caching and data and memory man
 A problem that we immediately noticed was whether Hogwild! can work on data that has both sparse and non-sparse components? The Click Prediction data has five dense values: age, gender, etc\ldots They are updated on every iteration. The tokens however are very sparse. Can we apply the Hogwild! algorithm in this case without ignoring the dense data?
 
 \section{Results}
-Graph of the speed up compared to sequential.
-Graph of errors?
+Initial results ranging from 1 to 4 CPU cores. During each run the same number of updates over the data occurs with the workload evenly distributed across each core. 
 
-\textcolor{red}{[BRIAN DO WE HAVE ANY POINTS FOR RESULTS? THANKS !!:)]}
+\includegraphics[scale=.3]{RMSE.jpg} \includegraphics[scale=.3]{running_time.jpg}
 
 \section{Further work}
 The next step in this project is to implement Shotgun for sparse logistic regression and distributed averaging for logistic regression. We will compare these algorithms amongst each other and to Hogwild! where appropriate. We will note where each algorithm performs best and where they fall short. We will have the baseline sequential predictions for each data set against which we can judge convergence and error rates.
