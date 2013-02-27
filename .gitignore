@@ -13,3 +13,5 @@ src/main/resources/*
 *.class
 
 latex/midway_progress/.Rhistory
+
+.DS_Store
