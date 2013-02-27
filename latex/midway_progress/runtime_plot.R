@@ -1,25 +1,15 @@
 library(ggplot2)
 library(reshape2)
-library(MASS)
-
-baseline_err = 0.17308
 
 err = c(0.170837,
 0.17089466,
 0.17091628,
 0.17109426)
 
-# err_rel_baseline = err
-err_rel = err / err[1]
-
 time=c(5.53, 3.73, 2.47, 2.26)
 speedup = time[1] / time
 
-
 runtime <- data.frame(num_cores=c(1,2,3,4), time=speedup, err=err)
-
-lm_time <- lm(data=runtime, time ~ num_cores)
-
 runtime_facet <- melt(data=runtime, id=c("num_cores"))
 
 height <- 2.25
