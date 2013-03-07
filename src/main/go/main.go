@@ -10,7 +10,7 @@ import (
     // "runtime"
 )
 
-var eta float32 = 0.01
+var eta float64 = 0.01
 
 type DataLine struct {
     clicked, depth, position, userid, gender, age int
@@ -24,7 +24,7 @@ func main() {
     line := ""
 
     dl := make([]DataLine, 2335859)
-    w := make(map[int]float32)
+    w := make(map[int]float64)
 
     for err == nil && i < 2335859 {
         line, err = r.ReadString('\n')
@@ -71,48 +71,48 @@ func parseLine(s string, dl []DataLine, i int) {
 }
 
 
-func predictLabel(dl *DataLine, w map[int]float32) float32 {
+func predictLabel(dl *DataLine, w map[int]float64) float64 {
 	offset := 5
 	sum :=  w[0] +
-			float32(dl.depth) * w[1] +
-			float32(dl.position) * w[2] +
-			float32(dl.gender) * w[3] +
-			float32(dl.age) * w[4]
+			float64(dl.depth) * w[1] +
+			float64(dl.position) * w[2] +
+			float64(dl.gender) * w[3] +
+			float64(dl.age) * w[4]
 	for _, v := range dl.tokens {
 		sum += w[v + offset]
 	}
-	numer := math.Exp(float64(sum))
-	return float32(numer / (1.0 + numer))
+	numer := math.Exp(sum)
+	return numer / (1.0 + numer)
 }
 
 
-func gradient(y int, yhat float32) float32 {
-    return (float32(y) - yhat) * eta
+func gradient(y int, yhat float64) float64 {
+    return (float64(y) - yhat) * eta
 }
 
 
-func updateWeights(dl *DataLine, w map[int]float32, grad float32) {
+func updateWeights(dl *DataLine, w map[int]float64, grad float64) {
 	offset := 5
 	w[0] += grad
-	w[1] += grad * float32(dl.depth)
-	w[2] += grad * float32(dl.position)
-	w[3] += grad * float32(dl.gender)
-	w[4] += grad * float32(dl.age)
+	w[1] += grad * float64(dl.depth)
+	w[2] += grad * float64(dl.position)
+	w[3] += grad * float64(dl.gender)
+	w[4] += grad * float64(dl.age)
 	for _, v := range dl.tokens {
 		w[v + offset] += grad
 	}
 }
 
-func sgd(dl *DataLine, w map[int]float32) {
+func sgd(dl *DataLine, w map[int]float64) {
 	yhat := predictLabel(dl, w)
 	grad := gradient(dl.clicked, yhat)
 	updateWeights(dl, w, grad)
 }
 
-func l2norm(w map[int]float32) float32 {
-	sum := float32(0)
+func l2norm(w map[int]float64) float64 {
+	sum := float64(0)
 	for _, v := range w {
 		sum += v * v
 	}
-	return float32(math.Sqrt(float64(sum)))
+	return math.Sqrt(sum)
 }
