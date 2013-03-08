@@ -1,7 +1,6 @@
 package sgd
 
 import (
-    "math"
     "math/rand" // to randomly permute data
 )
 
@@ -11,20 +10,6 @@ import (
 */
 
 var offset int = 5
-
-
-func predictLabel(dl *DataLine, w map[int]float64) float64 {
-	sum :=  w[0] +
-			w[1] * float64(dl.depth) +
-			w[2] * float64(dl.position) +
-			w[3] * float64(dl.gender) +
-			w[4] * float64(dl.age)
-	for _, v := range dl.tokens {
-		sum += w[v + offset]
-	}
-	numer := math.Exp(sum)
-	return numer / (1.0 + numer)
-}
 
 
 // logistic regression gradient
@@ -54,6 +39,11 @@ func sgd(dl *DataLine, w map[int]float64, eta float64) {
 }
 
 
+/*
+	The section for parallel execution
+*/
+
+
 func doAllData(dl []DataLine, w map[int]float64, eta float64, NCPU int) {
 	// make a channel for communicating when chunk is finished
 	c := make(chan int, NCPU)
@@ -73,8 +63,9 @@ func doAllData(dl []DataLine, w map[int]float64, eta float64, NCPU int) {
 }
 
 
+// run sgd on a random chunk of the data
 func doChunkOfData(dl []DataLine, w map[int]float64, perm []int, c chan int,
-				i int, n int, eta float64) {
+		i int, n int, eta float64) {
 	for j := i * n; j < (i + 1) * n; j++ {
 		sgd(&dl[perm[j]], w, eta)
 	}
