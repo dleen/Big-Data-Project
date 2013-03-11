@@ -137,6 +137,24 @@ Initial results ranging from one to four CPU cores. During each run the same num
 \section{Further work}
 The next step is to implement Shotgun and distributed averaging for (sparse) logistic regression. We will compare all three and confirm where each performs optimally. We have the baseline sequential predictions for each data set against which we can judge speedup, convergence and error rates. We will then expand to linear regression and support vector machines and time permitting matrix completions. The data sets will be expanded from click prediction. We will continue to investigate the issue of non-sparse data contaminating the Hogwild! algorithm and whether one can perform (delayed) regularization during Hogwild!
 
+\section{To Do List}
+\begin{enumerate}
+\item Get distributed averaging working (really easy).
+\item Discuss theory behind averaging. When will it work?
+\item Can we yet deal with data larger than memory? Need some sort of buffer?
+\item How can you have one processor deal with loading data?
+\item Better error plots.
+\item Non sparse components? Carlos: replication, something like hashing trick. Locking. Scheduling?
+\item Discuss hyper-threading.
+\item SVM. Maybe not needed. Better to do in depth discussion of few things.
+\item Theory behind Hogwild.
+\item Theory behind Shotgun.
+\item Can we find a cpu/memory heavy algorithm to which to apply sgd? Although we are already loading all the data into memory...
+\item Convert click prediction data into a sparse matrix format. Maybe use Python for this
+\item Access to big core machines somewhere on campus? Opteron?
+\end{enumerate}
+
+
 \subsubsection*{References}
 
 \begingroup

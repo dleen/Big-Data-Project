@@ -31,7 +31,7 @@ func predictLabel(dl *DataLine, w map[int]float64) float64 {
 func predictionRmse(td []DataLine, w map[int]float64) float64 {
     y := 0.0; yhat := 0.0; rmse := 0.0
     tl := new(TestLabels)
-    tl.LoadData("../resources/test_label.txt")
+    tl.LoadData("../resources/click/test_label.txt")
 
     for i := 0; i < 1016552; i++ {
         yhat = predictLabel(&td[i], w)

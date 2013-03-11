@@ -18,7 +18,7 @@ func BenchmarkSGD(b *testing.B) {
     b.StopTimer()
     cd := new(sgd.ClickData)
 
-    cd.LoadData("../resources/train.txt", "train")
+    cd.LoadData("../resources/click/train.txt", "train")
     cd.InitWeights()
 
     NCPU := runtime.GOMAXPROCS(-1)
