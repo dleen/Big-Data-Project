@@ -61,7 +61,7 @@ University of Washington \\
 
 \begin{abstract}
 {\em Milestone progress:} We implemented the Hogwild! algorithm and demonstrated an approximately linear speedup over the
-sequential stochastic gradient descent (SGD) algorithm.  We used the click prediction dataset and its sparse search token features to achieve a near optimal rate of convergence. We discuss the many issues arising with parallel algorithms and their implementations.
+sequential stochastic gradient descent (SGD) algorithm.  We used the click prediction dataset and its sparse search token features to test the algorithms. We discuss the many issues arising with parallel algorithms and their implementations.
 \end{abstract}
 
 \section{Introduction}
@@ -139,14 +139,21 @@ The next step is to implement Shotgun and distributed averaging for (sparse) log
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\textwidth]{./speedup_errors_complete.pdf}
+\includegraphics[width=\textwidth]{../../speedup_errors_complete}
 \caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
 \label{res}
 \end{figure}
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\textwidth]{./speedup_errors_complete_syn.pdf}
+\includegraphics[width=\textwidth]{../../speedup_errors_complete_syn}
+\caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
+\label{res}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.8\textwidth]{../../dist_avg}
 \caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
 \label{res}
 \end{figure}
