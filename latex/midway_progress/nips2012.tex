@@ -60,8 +60,8 @@ University of Washington \\
 \maketitle
 
 \begin{abstract}
-{\em Milestone progress:} We implemented the Hogwild! algorithm and demonstrated an approximately linear speedup over the
-sequential stochastic gradient descent (SGD) algorithm.  We used the click prediction dataset and its sparse search token features to test the algorithms. We discuss the many issues arising with parallel algorithms and their implementations.
+We implemented the Hogwild! algorithm and demonstrated an approximately linear speedup over the
+sequential stochastic gradient descent (SGD) algorithm.  We used the click prediction dataset and its sparse search token features to test the algorithms. We implement and demonstrate the close to optimal speedup of the Distributed Averaging method. Several strategies are detailed for dealing with mixed-sparsity data i.e. data that has both sparse and dense components. We implement a potentially novel combination of Hogwild!~and Distributed Averaging. We demonstrate the favorable trade-off between speedup and test error that this method gives on mixed-sparsity data. We finally test these algorithms on some synthetic data derived from the click prediction data set, where the number of dense user features and sparse tokens is increased.
 \end{abstract}
 
 \section{Introduction}
@@ -72,6 +72,8 @@ Hogwild!~is just one particular realization of parallel SGD \cite{niu2011hogwild
 MapReduce in contrast deals with hundreds and thousands of terabytes of data but is not well suited for online, iterative algorithms like SGD. MapReduce suffers from low throughputs due to fault tolerance and redundancy. Distributed averaging is a simple version of a distributed optimization algorithm \cite{dekel2012optimal, agarwal2011distributed}. The method distributes the data samples evenly in group to some number of machines. Each machine performs a separate minimization of each group independently of one another. The estimates of the weights from each group are then averaged hence the name.
 
 Shotgun provides a parallel solution to the high-dimensional problem with a large number of features using $L_1$-regularization \cite{ng2004feature}. In cases like this the dimensionality of the problem often dwarfs the number of samples. Once again the method involves taking a sequential algorithm, coordinate descent and simply parallelizes it, this time over features. The algorithm makes the coordinate updates in parallel to provide a speedup.
+
+We study these algorithms in the context of the click prediction dataset. We first briefly discuss the algorithms, the challenges associated with parallel programming, then specific challenges associated with the click prediction dataset. Finally we present our results and our ``replicate'' strategy for mixed-sparsity data.
 
 \section{Method}
 The weight vector $w$ for logistic regression is updated according to the usual SGD equation:
@@ -112,24 +114,39 @@ The component wise addition of elements from the weight vector is assumed to be 
 \subsection{Parallel and concurrent programming}
 Parallel programming is hard. The Hogwild!~solution is to ignore all the major issues associated with parallelism. The Hogwild!~paper discusses a compromise between full synchronization and no locking at all which they call AIG. AIG puts a lock on only the elements that are being updated inside the for loop in algorithm \ref{alg1}. This is essentially what ConcurrentHashMap in Java does. It often can be difficult to determine which regime we are operating in without resorting to a closer-to-the-hardware language like C.
 
+Distributed Averaging takes the opposite approach avoiding the issues of parallelism altogether. It turns the problem into a data parallel one by dividing the data into a number of chunks, one per machine or processor and running SGD in parallel on each one independent of the others. The weights are then averaged. 
+
 \subsection{Storing data in memory}
 The Hogwild!~algorithm relies on extremely fast throughput of data from memory or disk. Reading from disk is not fast enough to supply data as needed by a 4-6 core machine. This could be possible with a RAID setup but at the time this was not available. The Hogwild!~paper uses sophisticated caching and memory management to process terabyte sized data on a single machine.
 
-Our current solution is to load and parse all the data into RAM. 8-16GB of RAM is fairly standard these days, which is sufficient for the click prediction set, but it is not enough for terabyte data sets. We need to investigate how to break data sets into manageable chunks while still sampling uniformly as needed by the algorithms. 
+Our current solution is to load and parse all the data into RAM. 8--16GB of RAM is fairly standard these days, which is sufficient for the click prediction set, but it is not enough for terabyte data sets. We need to investigate how to break data sets into manageable chunks while still sampling uniformly as needed by the algorithms. 
 
 \subsection{Non-sparse data}
-An immediate issue was whether Hogwild! can work efficiently on data with sparse and non-sparse components? The click prediction data has several dense values including age and gender. They are updated on every iteration. The tokens however are very sparse. Can we apply the Hogwild! algorithm in this case without ignoring the dense data? This is still unclear.
+An immediate issue was whether Hogwild! can work efficiently on data with sparse and non-sparse components? The click prediction data has several dense values including age and gender. They are updated on every iteration. The tokens however are very sparse. Can we apply the Hogwild! algorithm in this case without ignoring the dense data? This issue is answered in the next section.
+
+\section{Mixed-sparsity data}
+The click prediction data provides an interesting scenario in which to test Hogwild! The click prediction dataset is comprised of user features and sparse tokens. We call this combination of sparse and non-sparse data ``mixed-sparsity''. We initially pretend the data is sparse and run Hogwild!~ before discussing strategies for improving the error while maintaining the speedup from the extra processors.
+
+\subsection{Strategies for mixed-sparsity data}
+We outline several strategies that we implement and test on the click prediction dataset:
+\begin{enumerate}
+\item Locking
+\item Normal
+\item Random
+\item Single thread
+\item Replicate
+\end{enumerate}
 
 \section{Results}
 Initial results ranging from one to four CPU cores. During each run the same number of updates over the data occurs with the workload evenly distributed across each core. We fall slightly short of the optimal speedup of four, figure \ref{res}(a). The Hogwild! algorithm has a slightly worse RMSE as expected, figure \ref{res}(b).
 \begin{figure}[htb]
 \centering
 \begin{subfigure}{0.49\textwidth}
-\includegraphics[width=\textwidth]{./speedup}
+\includegraphics[width=\textwidth]{./speedup.pdf}
 \end{subfigure}
 \centering
 \begin{subfigure}{0.49\textwidth}
-\includegraphics[width=\textwidth]{./error}
+\includegraphics[width=\textwidth]{./error.pdf}
 \end{subfigure}
 \caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
 \label{res}
@@ -139,21 +156,21 @@ The next step is to implement Shotgun and distributed averaging for (sparse) log
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\textwidth]{../../speedup_errors_complete}
+\includegraphics[width=\textwidth]{../../speedup_errors_complete.pdf}
 \caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
 \label{res}
 \end{figure}
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\textwidth]{../../speedup_errors_complete_syn}
+\includegraphics[width=\textwidth]{../../speedup_errors_complete_syn.pdf}
 \caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
 \label{res}
 \end{figure}
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.8\textwidth]{../../dist_avg}
+\includegraphics[width=0.8\textwidth]{../../dist_avg.pdf}
 \caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
 \label{res}
 \end{figure}
