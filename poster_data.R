@@ -5,9 +5,12 @@ library(MASS)
 library(directlabels)
 
 # data <- read.csv('./results-all.csv', header=FALSE)
-data <- read.csv('./results_synthetic_10_50.csv', header=FALSE)
-
+# data <- read.csv('./results_synthetic_10_50.csv', header=FALSE)
+data <- read.csv('./results_synthetic_100_1.csv', header=FALSE)
 colnames(data) <- c("Method", "Cores", "Error", "Time")
+
+data <- data[data["Time"] > 800,]
+
 
 meth <- unique(data[["Method"]])
 
@@ -21,22 +24,20 @@ for(c in meth) {
   j = 1
   for(i in 1:6) {
 #     j = j - 1
-    while(a[j, "Cores"] == i && j < 307) {
-      a[j,"Time"] <- one / a[j,"Time"] 
+#     while(a[j, "Cores"] == i && j < 307) {
+      while(a[j, "Cores"] == i && j < 225) {
+        a[j,"Time"] <- one / a[j,"Time"] 
       j = j + 1
     }
   }
-  newdata <- rbind(newdata, a)
+#   newdata <- rbind(newdata, a)
+  newdata <- rbind(newdata, a[1:(j-1),])
 }
 
 newdata["Method"] <- factor(newdata[["Method"]])
 
 width = 5
 height = 4
-
-se <- function(x) {
-  sqrt(var(x) / length(x))
-}
 
 
 pdf('./speedup_normal.pdf', width=width, height=height)
@@ -69,7 +70,7 @@ print(p2)
 
 dev.off()
 
-pdf('./speedup_others_syn.pdf', width=12, height=height)
+pdf('./speedup_others_syn_100.pdf', width=12, height=height)
 
 # p3 <- ggplot(data=newdata[newdata["Method"] != "NORMAL",], aes(Cores, Time, group=Method, color=Method))
 p3 <- ggplot(data=newdata, aes(Cores, Time, group=Method))
@@ -77,7 +78,7 @@ p3 <- p3 + geom_point(alpha=0.33)
 p3 <- p3 + stat_summary(fun.data=mean_cl_normal, geom="line", color="black")
 p3 <- p3 + stat_summary(fun.data=mean_cl_normal, geom="errorbar", color="red", alpha=0.75)
 # p3 <- p3 + coord_cartesian(xlim=c(0.5,6.5), ylim=c(0.8, 3.0))
-p3 <- p3 + coord_cartesian(xlim=c(0.5,6.5), ylim=c(0.8, 3.25))
+p3 <- p3 + coord_cartesian(xlim=c(0.5,6.5), ylim=c(0.8, 2.1))
 p3 <- p3 + scale_x_continuous(breaks=c(1,2,3,4,5,6))
 p3 <- p3 + facet_grid(~Method)
 p3 <- p3 + xlab('Number of cores')
@@ -90,14 +91,14 @@ print(p3)
 
 dev.off()
 
-pdf('./error_others_syn.pdf', width=12, height=height)
+pdf('./error_others_syn_100.pdf', width=12, height=height)
 
 p4 <- ggplot(data=newdata, aes(Cores, Error, group=Method))
 p4 <- p4 + geom_point(alpha=0.33)
 p4 <- p4 + stat_summary(fun.data=mean_cl_normal, geom="line", color="black")
 p4 <- p4 + stat_summary(fun.data=mean_cl_normal, geom="errorbar", color="red", alpha=0.75)
 # p4 <- p4 + coord_cartesian(xlim=c(0.5,6.5), ylim=c(0.1707, 0.1725))
-p4 <- p4 + coord_cartesian(xlim=c(0.5,6.5), ylim=c(0.17245, 0.1728))
+p4 <- p4 + coord_cartesian(xlim=c(0.5,6.5), ylim=c(0.17245, 0.17325))
 p4 <- p4 + scale_x_continuous(breaks=c(1,2,3,4,5,6))
 p4 <- p4 + facet_grid(~Method)
 p4 <- p4 + xlab('Number of cores')
