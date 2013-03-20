@@ -127,14 +127,31 @@ An immediate issue was whether Hogwild! can work efficiently on data with sparse
 \section{Mixed-sparsity data}
 The click prediction data provides an interesting scenario in which to test Hogwild! The click prediction dataset is comprised of user features and sparse tokens. We call this combination of sparse and non-sparse data ``mixed-sparsity''. We initially pretend the data is sparse and run Hogwild!~ before discussing strategies for improving the error while maintaining the speedup from the extra processors.
 
+As expected not dealing with the non-sparse data allowed for the expected speedup but as more processor cores were introduced the error spiked as there were more data collisions with the non-sparse features. We took this as a good opportunity to explore methods to handle the non-sparse data and still obtain a substantial speedup from the Hogwild! algorithm.  We explored five methods to handle the non-sparse features.
+
 \subsection{Strategies for mixed-sparsity data}
 We outline several strategies that we implement and test on the click prediction dataset:
 \begin{enumerate}
-\item Locking
+
 \item Normal
+
+This strategy simply treats all of the data as sparse regardless as to whether it truly is.  Therefore, we run Hogwild! with absolutely no locking on any of the data features and let data collisions occur without any attempt to prevent them. This is less of a strategy for dealing with non-sparse data as it is a baseline with which we can compare our other strategies. 
+
+\item Locking
+
+The most obvious strategy is to lock the data to prevent data collisions.  However, the whole point of the Hogwild! algorithm is to gain a near linear speedup by not using locking.  The introduction of locks forces a portion of the algorithm to run sequentially and thus has the potential to kill our speedup.  Since only a small portion of our data is non-sparse we only lock during the update of these non-sparse features and allow the remaining sparse data to continue lock-free. 
+
 \item Random
+
+This strategy attempts to prevent data collisions by giving all the threads an equal probability to update the non-sparse weights.  To implement this strategy we use a random number generator that produces a number from zero to the number of current threads. If that threads generated number is zero then it updates the non-sparse data.  This allows the data to be updated once, on average, for each iteration.  Data collisions are still allowed to occur and no locking is done. 
+
 \item Single thread
+
+To completely prevent any chance of data collisions this strategy randomly chooses one thread at the start of the algorithm to be the only thread to update the non-sparse weights. This strategy allows us to remain lock-free and have a zero chance of data collisions.  This comes at the cost of updating the non-sparse data less frequently.
+ 
 \item Replicate
+
+This strategy attempts to eliminate the problem of data collisions while still allowing the non-sparse weights to be based on more information than is provided by just a single thread. Instead of assigning a single thread or randomizing to determine which thread can update the non-sparse data, we allow all of them to update their own copies of the non-sparse data.  Each thread is given its own copy and updates the non-sparse data independently and thus without locks.  The sparse data still remains in shared memory and the updates to these features remains unchanged from the original Hogwild! algorithm.  When the algorithm has completed we then average the non-sparse data from each of the threads back into shared memory.  This allows us to tally the information from all of the threads with the hope of achieving more accurate weights. 
 \end{enumerate}
 
 \section{Results}
