@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{caption}
+\usepackage{float}
 
 \definecolor{javared}{rgb}{0.6,0,0} % for strings
 \definecolor{javagreen}{rgb}{0.25,0.5,0.35} % comments
@@ -81,14 +82,14 @@ The weight vector $w$ for logistic regression is updated according to the usual 
 w_i^{t+1} \leftarrow w_i^t + \eta \bigg[y^t - \frac{\exp{(w^t \cdot x^t)}}{1 + \exp{(w^t \cdot x^t)}} \bigg]x_i^t.
 \end{equation}
 
-\subsection{Proof of concept}
-The minimal example demonstrating the Hogwild! concept in practice for a simple mapping is (in Scala for brevity):
-\begin{lstlisting}
-val weights = collection.mutable.Map[Int, Double]() // create a mapping
-for (i <- data.keys) weights.put(i, 0.0) // initialize key values to 0.0
-for (k <- samples.par, i <- feature.keys) weights(i) += gradient // update
-\end{lstlisting}
-This parallel version of SGD (using the \verb+.par+ method) produces non-deterministic values for the weights as expected. This is due to a race condition caused by threads overwriting one another. The Hogwild! algorithm relies on the sparsity of the data to ensure that updates do not operate simultaneously on the same keys. It relies on the same sparsity to parallelize the sequential algorithm.
+%\subsection{Proof of concept}
+%The minimal example demonstrating the Hogwild! concept in practice for a simple mapping is (in Scala for brevity):
+%\begin{lstlisting}
+%val weights = collection.mutable.Map[Int, Double]() // create a mapping
+%for (i <- data.keys) weights.put(i, 0.0) // initialize key values to 0.0
+%for (k <- samples.par, i <- feature.keys) weights(i) += gradient // update
+%\end{lstlisting}
+%This parallel version of SGD (using the \verb+.par+ method) produces non-deterministic values for the weights as expected. This is due to a race condition caused by threads overwriting one another. The Hogwild! algorithm relies on the sparsity of the data to ensure that updates do not operate simultaneously on the same keys. It relies on the same sparsity to parallelize the sequential algorithm.
 
 \subsection{Algorithm}
 
@@ -132,81 +133,74 @@ As expected not dealing with the non-sparse data allowed for the expected speedu
 \subsection{Strategies for mixed-sparsity data}
 We outline several strategies that we implement and test on the click prediction dataset:
 \begin{enumerate}
-
-\item Normal
-
-This strategy simply treats all of the data as sparse regardless as to whether it truly is.  Therefore, we run Hogwild! with absolutely no locking on any of the data features and let data collisions occur without any attempt to prevent them. This is less of a strategy for dealing with non-sparse data as it is a baseline with which we can compare our other strategies. 
-
-\item Locking
-
-The most obvious strategy is to lock the data to prevent data collisions.  However, the whole point of the Hogwild! algorithm is to gain a near linear speedup by not using locking.  The introduction of locks forces a portion of the algorithm to run sequentially and thus has the potential to kill our speedup.  Since only a small portion of our data is non-sparse we only lock during the update of these non-sparse features and allow the remaining sparse data to continue lock-free. 
-
-\item Random
-
-This strategy attempts to prevent data collisions by giving all the threads an equal probability to update the non-sparse weights.  To implement this strategy we use a random number generator that produces a number from zero to the number of current threads. If that threads generated number is zero then it updates the non-sparse data.  This allows the data to be updated once, on average, for each iteration.  Data collisions are still allowed to occur and no locking is done. 
-
-\item Single thread
-
-To completely prevent any chance of data collisions this strategy randomly chooses one thread at the start of the algorithm to be the only thread to update the non-sparse weights. This strategy allows us to remain lock-free and have a zero chance of data collisions.  This comes at the cost of updating the non-sparse data less frequently.
- 
-\item Replicate
-
-This strategy attempts to eliminate the problem of data collisions while still allowing the non-sparse weights to be based on more information than is provided by just a single thread. Instead of assigning a single thread or randomizing to determine which thread can update the non-sparse data, we allow all of them to update their own copies of the non-sparse data.  Each thread is given its own copy and updates the non-sparse data independently and thus without locks.  The sparse data still remains in shared memory and the updates to these features remains unchanged from the original Hogwild! algorithm.  When the algorithm has completed we then average the non-sparse data from each of the threads back into shared memory.  This allows us to tally the information from all of the threads with the hope of achieving more accurate weights. 
+\item {\em Normal}: this strategy simply treats all of the data as sparse regardless as to whether it truly is.  Therefore, we run Hogwild!~with absolutely no locking on any of the data features and let data collisions occur without any attempt to prevent them. This is less of a strategy for dealing with non-sparse data as it is a baseline with which we can compare our other strategies. 
+\item {\em Locking}: the most obvious strategy is to lock the data to prevent data collisions.  However, the whole point of the Hogwild!~algorithm is to gain a near linear speedup by not using locking. The introduction of locks forces a portion of the algorithm to run sequentially and thus has the potential to kill our speedup. Since only a small portion of our data is non-sparse we only lock during the update of these non-sparse features and allow the remaining sparse data to continue lock-free. 
+\item {\em Random}: this strategy attempts to prevent data collisions by giving all the threads an equal probability to update the non-sparse weights. To implement this strategy we use a random number generator that produces a number from zero to the number of current threads. If that threads generated number is zero then it updates the non-sparse data. This allows the data to be updated once, on average, for each iteration.  Data collisions are still allowed to occur and no locking is done. 
+\item {\em Single thread}: to completely prevent any chance of data collisions this strategy randomly chooses one thread at the start of the algorithm to be the only thread to update the non-sparse weights. This strategy allows us to remain lock-free and have a zero chance of data collisions. This comes at the cost of updating the non-sparse data less frequently.
+\item {\em Replicate}: this strategy attempts to eliminate the problem of data collisions while still allowing the non-sparse weights to be based on more information than is provided by just a single thread. Instead of assigning a single thread or randomizing to determine which thread can update the non-sparse data, we allow all of them to update their own copies of the non-sparse data.  Each thread is given its own copy and updates the non-sparse data independently and thus without locks.  The sparse data still remains in shared memory and the updates to these features remains unchanged from the original Hogwild!~algorithm. When the algorithm has completed we then average the non-sparse data from each of the threads back into shared memory. This allows us to tally the information from all of the threads with the hope of achieving more accurate weights. 
 \end{enumerate}
 
 \section{Results}
-Initial results ranging from one to four CPU cores. During each run the same number of updates over the data occurs with the workload evenly distributed across each core. We fall slightly short of the optimal speedup of four, figure \ref{res}(a). The Hogwild! algorithm has a slightly worse RMSE as expected, figure \ref{res}(b).
-\begin{figure}[htb]
+Initial results ranging from one to four CPU cores (figure \ref{res}). During each run the same number of updates over the data occurs with the workload evenly distributed across each core. We fall slightly short of the optimal speedup of four, figure \ref{res}(a). The Hogwild! algorithm has a slightly worse RMSE as expected, figure \ref{res}(b).
+\begin{figure}[H]
 \centering
-\begin{subfigure}{0.49\textwidth}
+\begin{subfigure}{0.35\textwidth}
 \includegraphics[width=\textwidth]{./speedup.pdf}
 \end{subfigure}
 \centering
-\begin{subfigure}{0.49\textwidth}
+\begin{subfigure}{0.35\textwidth}
 \includegraphics[width=\textwidth]{./error.pdf}
 \end{subfigure}
 \caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
 \label{res}
 \end{figure}
-\section{Further work}
-The next step is to implement Shotgun and distributed averaging for (sparse) logistic regression. We will compare all three and confirm where each performs optimally. We have the baseline sequential predictions for each data set against which we can judge speedup, convergence and error rates. We will then expand to linear regression and support vector machines and time permitting matrix completions. The data sets will be expanded from click prediction. We will continue to investigate the issue of non-sparse data contaminating the Hogwild! algorithm and whether one can perform (delayed) regularization during Hogwild!
 
-\begin{figure}[htb]
+Distributed averaging (figure \ref{dist_avg}) achieves near optimal speedup as each processor runs independently of one another and do not need to communicate. The error suffers as each processor only trains on a fraction of the data.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{../../dist_avg.pdf}
+\caption{Distributed averaging achieves nearly optimal speedup as there is no communication overhead between the processors. The SGD is computed independently for each processor. The error increases drastically as the data is split more and more and each processor trains the weights on less and less data.}
+\label{dist_avg}
+\end{figure}
+
+We now discuss the results of our strategies for dealing with mixed-sparsity data. Figure \ref{speedup_all} displays the results of our numerical experiments. The main result is that the replication technique out-performs everything else in terms of speedup-error tradeoff. It combines the the speedup and advantages of Hogwild!~with the batch processing of distributed averaging for the dense data components.
+
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../../speedup_errors_complete.pdf}
-\caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
-\label{res}
+\caption{A comparison of our strategies for dealing with mixed-sparsity data. Lock suffers greatly in speedup as the number of processors increases from one to six. This is because of processors waiting for locked resources. The test error is constant in the number of processors and is consistently the best among all the algorithms. Normal and random have similar speedup performances and have high variances in the errors which are larger than the locked and replicate case. Random does as well as treating the data as sparse and achieves better errors. Single thread performs the worst as it trains the weights on only a fraction of the data. Replicate is our novel attempt at the mixed-sparsity problem. The speedup is as good as the other cases and the error is almost as good as the locking case. This is both a surprising and promising result.}
+\label{speedup_all}
 \end{figure}
+
+We generate synthetic data (figure \ref{speedup_syn}) derived from the click prediction data by increasing the size of the dense user features and increasing the number of sparse features. This causes the locking algorithm even more problems. The other algorithms see an increase in speedup as the processors spend relatively more time calculating the gradient compared to communication and memory overhead.
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=\textwidth]{../../speedup_errors_complete_syn.pdf}
-\caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
-\label{res}
+\caption{Synthetic data is created from the click prediction data by doubling the number of user features from five to ten and increasing the number of sparse features per sample to 50. This increases the amount of work for each processor and hence we see a greater speedup. The lock strategy suffers the most due to scheduling of the greater workload. Replicate amazingly has the best error and greatest speedup. The test error variance is also very small compared to the others. This was a surprisingly good result. Random and normal suffer from the worst errors as expected.}
+\label{speedup_syn}
 \end{figure}
+
+Plotting the test error against the wall time (figure \ref{wall time}) clearly demonstrates the strengths of the replicate algorithm.
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.8\textwidth]{../../dist_avg.pdf}
-\caption{(a) The observed speedup from experiment. The speedup with four processors is approximately 2.55.~(b) The observed root mean squared error growth with number of cores from experiment.}
-\label{res}
+\includegraphics[width=\textwidth]{../../walltime_6.pdf}
+\caption{The test error as a function of wall time. Locking achieves the best error among all the algorithms as expected. This suffers greatly in speedup performance however. Normal is quite noisy as we are treating the data as sparse and the processors will frequently overwrite one another. Random has the worst error out of all of them. Replicate is again surprising as it performs almost as well. Single thread performs about as well as normal.}
+\label{walltime}
 \end{figure}
 
-\section{To Do List}
-\begin{enumerate}
-\item Discuss theory behind averaging. When will it work?
-\item Theory behind Hogwild.
-\end{enumerate}
 
+\newpage
+\section{Further work}
+Further work involves a theoretical analysis of the error bounds of our replicate algorithm. 
 
+\newpage
 \subsubsection*{References}
-
 \begingroup
 \renewcommand{\section}[2]{}%
-%\renewcommand{\chapter}[2]{}% for other classes
 \bibliographystyle{unsrt}
 \bibliography{references}
 \endgroup
-
-
 \end{document}
